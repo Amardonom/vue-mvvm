@@ -1,0 +1,17 @@
+{
+  "name": "hellovue",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {},
+  "devDependencies": {
+    "live-server": "^1.2.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "live-server"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
