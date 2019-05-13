@@ -7,8 +7,17 @@
     <title>Document</title>
 </head>
 <body>
-  <script type="module">
-    import { observe } from './js/observe.js'
+  <div id="app">{{name}}</div>
+  <script src="./js/observe.js"></script>
+  <script src="./js/watcher.js"></script>
+  <script src="./js/yyf-vue.js"></script>
+  <script>
+    const vm = new Yyfvue({
+        el: "#app",
+        data: {
+            name: "我是摩登"
+        }
+    }, "name");
   </script>
 </body>
 </html>
