@@ -1,68 +1,92 @@
-
-// Dep 发布中心
-class Dep {
-  constructor () {
-    // 这里用来收集订阅者
-    this.subs = []
-  }
-  addSub (sub) {
-    // 新增订阅者
-    this.subs.push(sub)
-  }
-  notify () {
-    console.log('属性变化通知 Watcher 执行更新视图函数')
-    const self = this
-    // 当监听到数据更新的时候 通知订阅者 触发订阅者的update方法
-    self.subs.forEach(function(sub){
-      sub.update()
-    })
-  }
-}
-
-Dep.target = null
-
-// Observe 数据劫持
-class Observe {
-  constructor (data) {
-    this.data = data
-    this.walk(data)
-  }
-  walk (data){
-    const self = this
-    Object.keys(data).forEach(function(key) {
-      self.difineReactive(data, key, data[key])
-    })
-  }
-  difineReactive (data, key, value){
-    let dep = new Dep()
-    observe(value) // 如果data[key]是对象的话 对data[key]进行监听
-    Object.defineProperty(data, key, {
-      enumerable: true, // 可被遍历
-      configurable: false, // 不可被重新define
-      get: function () {
-        console.log(`你正在访问${key}，值为${value}`)
-        if (Dep.target) {
-          // 在这里添加一个订阅者
-          console.log('Dep.target', Dep.target)
-          dep.addSub(Dep.target)
-        }
-        return value
-      },
-      set: function (newVal) {
-        if (newVal === value) {
-          return
-        }
-        value = newVal
-        observe(newVal) // 如果更新之后的值是对象的话继续监听
-        dep.notify() // 通知订阅者
-      }
-    })
-  }
-}
-
-function observe (value) {
+/**
+ * @class 发布类 Observer that are attached to each observed
+ * @param {[type]} value [vm参数]
+ */
+function observe(value, asRootData) {
   if (!value || typeof value !== 'object') {
-    return
+    return;
   }
-  return new Observe(value)
+  return new Observer(value);
+}
+
+function Observer(value) {
+ this.value = value;
+ this.walk(value);
+}
+
+Observer.prototype = {
+ walk: function (obj) {
+   let self = this;
+   Object.keys(obj).forEach(key => {
+     self.observeProperty(obj, key, obj[key]);
+   });
+ },
+ observeProperty: function (obj, key, val) {
+   let dep = new Dep();
+   let childOb = observe(val);
+   Object.defineProperty(obj, key, {
+     enumerable: true,
+     configurable: true,
+     get: function() {
+       if (Dep.target) {
+         dep.depend();
+       }
+       if (childOb) {
+         childOb.dep.depend();
+       }
+       return val;
+     },
+     set: function(newVal) {
+       if (val === newVal || (newVal !== newVal && val !== val)) {
+         return;
+       }
+       val = newVal;
+       // 监听子属性
+       childOb = observe(newVal);
+       // 通知数据变更
+       dep.notify();
+     }
+   })
+ }
+}
+/**
+* @class 依赖类 Dep
+*/
+let uid = 0;
+function Dep() {
+ // dep id
+ this.id = uid++;
+ // array 存储Watcher
+ this.subs = [];
+}
+Dep.target = null;
+Dep.prototype = {
+ /**
+  * [添加订阅者]
+  * @param  {[Watcher]} sub [订阅者]
+  */
+ addSub: function (sub) {
+   this.subs.push(sub);
+ },
+ /**
+  * [移除订阅者]
+  * @param  {[Watcher]} sub [订阅者]
+  */
+ removeSub: function (sub) {
+   let index = this.subs.indexOf(sub);
+   if (index !== -1) {
+     this.subs.splice(index ,1);
+   }
+ },
+ // 通知数据变更
+ notify: function () {
+   this.subs.forEach(sub => {
+     // 执行sub的update更新函数
+     sub.update();
+   });
+ },
+ // add Watcher
+ depend: function () {
+   Dep.target.addDep(this);
+ }
 }

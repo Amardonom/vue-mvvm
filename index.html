@@ -7,17 +7,30 @@
     <title>Document</title>
 </head>
 <body>
-  <div id="app">{{name}}</div>
+  <div id="mvvm">
+    <h2>{{flag}}</h2>
+    <input type="text" x-model="a">
+    <input type="text" name="" value="" x-model="a">
+    <p x-html="a">{{ a }}</p>
+    <button type="button" name="button" x-on:click="testToggle">change b</button>
+  </div>
   <script src="./js/observe.js"></script>
   <script src="./js/watcher.js"></script>
   <script src="./js/yyf-vue.js"></script>
+  <script src="./js/compile.js"></script>
   <script>
-    const vm = new Yyfvue({
-        el: "#app",
+      var vm = new MVVM({
+        el: '#mvvm',
         data: {
-            name: "我是摩登"
+          a: 'test model',
+          flag: true
+        },
+        methods: {
+          testToggle: function () {
+            this.flag = !this.flag
+          }
         }
-    }, "name");
-  </script>
+      });
+      </script>
 </body>
 </html>

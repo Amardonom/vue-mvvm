@@ -1,17 +1,37 @@
-class Yyfvue {
-  constructor (options, prop) {
-    this.$options = options;
-    this.$data = options.data;
-    this.$prop = prop;
-    this.$el = document.querySelector(options.el);
-    this.init();
-  }
-  init () {
-    observe(this.$data)
-    this.$el.textContent = this.$data[this.$prop]
-    new Watcher(this, this.$prop, value => {
-      console.log('进入回调 更新数据')
-      this.$el.textContent = value;
+/**
+ * @class 双向绑定类 MVVM
+ * @param {[type]} options [description]
+ */
+function MVVM (options) {
+  this.$options = options || {};
+  let data = this._data = this.$options.data;
+  let self = this;
+
+  Object.keys(data).forEach(key => {
+    self._proxyData(key);
+  });
+  observe(data, this);
+  new Compile(options.el || document.body, this);
+}
+MVVM.prototype = {
+  /**
+   * [属性代理]
+   * @param  {[type]} key    [数据key]
+   * @param  {[type]} setter [属性set]
+   * @param  {[type]} getter [属性get]
+   */
+  _proxyData: function (key, setter, getter) {
+    let self = this;
+    setter = setter ||
+    Object.defineProperty(self, key, {
+      configurable: false,
+      enumerable: true,
+      get: function proxyGetter() {
+        return self._data[key];
+      },
+      set: function proxySetter(newVal) {
+        self._data[key] = newVal;
+      }
     })
   }
 }
